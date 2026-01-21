@@ -46,7 +46,7 @@ def read_input(filename):
             "enjoyment" : int(enjoyment),
         })
 #    print(n, T, B)
-    print(activities)
+#    print(activities[0]["name"])
 
     f.close()
     return n, T, B, activities
