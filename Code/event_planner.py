@@ -10,7 +10,6 @@ Usage:
     python event_planner.py <input_file>
 """
 
-import sys
 import time
 
 
@@ -25,8 +24,34 @@ def read_input(filename):
         tuple: (num_activities, max_time, max_budget, activities)
                activities is a list of dicts with keys: name, time, cost, enjoyment
     """
+    #open the file and assign test to variable lines
+    with open(filename, "r") as f:
+        lines = [ln for ln in f]
+
+    activities = []
+    #assign n, T and B
+
+    n = int(lines[0])
+    line2 = lines[1].split()
+    T = int(line2[0])
+    B = int(line2[1])
+
+    #iterate through each activity and assign parts to dictionary
+    for i in range(n):
+        name, time, cost, enjoyment = lines[i+2].split()
+        activities.append({
+            "name" : name,
+            "time" : int(time),
+            "cost" : int(cost),
+            "enjoyment" : int(enjoyment),
+        })
+#    print(n, T, B)
+    print(activities)
+
+    f.close()
+    return n, T, B, activities
     # TODO: Implement input file parsing
-    pass
+
 
 
 def brute_force_solver(activities, max_constraint, constraint_type='time'):
@@ -86,16 +111,11 @@ def main():
     """
     Main function to run the event planner.
     """
-    if len(sys.argv) != 2:
-        print("Usage: python event_planner.py <input_file>")
-        sys.exit(1)
-    
-    input_file = sys.argv[1]
-    
-    # Read input
-    # TODO: Implement main logic
-    
-    print("Event Planner - Implementation in progress")
+
+    input_file = "Input_Files/Sample Input Files-20260121/input_10.txt"
+    read_input(input_file)
+
+    # TODO: Implement main logic and run brute force and dp algorithms 
     print(f"Input file: {input_file}")
 
 
