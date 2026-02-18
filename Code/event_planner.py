@@ -11,6 +11,8 @@ Usage:
 """
 
 import time
+from itertools import combinations
+#T = 0
 
 
 def read_input(filename):
@@ -24,11 +26,11 @@ def read_input(filename):
         tuple: (num_activities, max_time, max_budget, activities)
                activities is a list of dicts with keys: name, time, cost, enjoyment
     """
+    activities = []
     #open the file and assign test to variable lines
     with open(filename, "r") as f:
         lines = [ln for ln in f]
 
-    activities = []
     #assign n, T and B
 
     n = int(lines[0])
@@ -45,16 +47,14 @@ def read_input(filename):
             "cost" : int(cost),
             "enjoyment" : int(enjoyment),
         })
+    #tests to see if code runs correctly:
 #    print(n, T, B)
-#    print(activities[0]["name"])
-
-    f.close()
+#   print(activities[0]["names"])
     return n, T, B, activities
-    # TODO: Implement input file parsing
 
 
 
-def brute_force_solver(activities, max_constraint, constraint_type='time'):
+def brute_force_solver(acts, T):
     """
     Brute force algorithm to find optimal activity selection.
     Generates all possible subsets and evaluates each.
@@ -67,8 +67,30 @@ def brute_force_solver(activities, max_constraint, constraint_type='time'):
     Returns:
         tuple: (selected_activities, total_enjoyment, execution_time)
     """
-    # TODO: Implement brute force algorithm
-    pass
+    start = time.perf_counter()
+
+    best_enjoyment = -1
+    best_acts = []
+    best_time = 999
+    best_cost = 0
+    for i in range(len(acts)+1):
+        for combs in combinations(acts, i):
+            sum_time = sum(j["time"] for j in combs)
+            if sum_time > int(T):
+                continue
+            sum_enjoyment = sum(k["enjoyment"] for k in combs)
+            if (sum_enjoyment > best_enjoyment or (sum_enjoyment == best_enjoyment and sum_time < best_time)):
+                best_enjoyment = sum_enjoyment
+                best_time = sum_time
+                best_acts = list(combs)
+                best_cost = sum(j["cost"] for j in combs)
+    #print(best_enjoyment)
+    #print(best_acts)
+
+    end = time.perf_counter()
+    exec_time = end - start
+    return best_acts, best_enjoyment, best_time, best_cost, exec_time
+
 
 
 def dp_solver(activities, max_constraint, constraint_type='time'):
@@ -113,9 +135,9 @@ def main():
     """
 
     input_file = "Input_Files/Sample Input Files-20260121/input_10.txt"
-    read_input(input_file)
-
-    # TODO: Implement main logic and run brute force and dp algorithms 
+    n, T, B, activities = read_input(input_file)
+    brute_force_solver(activities, T)
+    # TODO: Implement main logic and run brute force and dp algorithms
     print(f"Input file: {input_file}")
 
 
