@@ -79,7 +79,8 @@ def brute_force_solver(acts, T):
             if sum_time > int(T):
                 continue
             sum_enjoyment = sum(k["enjoyment"] for k in combs)
-            if (sum_enjoyment > best_enjoyment or (sum_enjoyment == best_enjoyment and sum_time < best_time)):
+            if (sum_enjoyment > best_enjoyment or
+                (sum_enjoyment == best_enjoyment and sum_time < best_time)):
                 best_enjoyment = sum_enjoyment
                 best_time = sum_time
                 best_acts = list(combs)
@@ -110,8 +111,8 @@ def dp_solver(activities, max_constraint, constraint_type='time'):
     pass
 
 
-def print_results(algorithm_name, selected_activities, total_enjoyment, 
-                 total_time, total_cost, max_time, max_budget, exec_time):
+def print_results(input_file, selected_activities_BF, total_enjoyment_BF, 
+                 total_time_BF, total_cost_BF, max_time, max_budget, exec_time_BF):
     """
     Print results in the required format.
     
@@ -125,8 +126,27 @@ def print_results(algorithm_name, selected_activities, total_enjoyment,
         max_budget: Available budget
         exec_time: Execution time in seconds
     """
-    # TODO: Implement output formatting
-    pass
+    print("========================================")
+    print("EVENT PLANNER - RESULTS")
+    print("========================================")
+    print()
+    print("Input File: ", input_file)
+    print("Available Time: ", max_time)
+    print("Available Budget: ", max_budget)
+    print()
+    print("--- BRUTE FORCE ALGORITHM ---")
+    print("Selected Activities:")
+    for act in selected_activities_BF:
+        name = act.get("name")
+        t = act.get("time")
+        c = act.get("cost")
+        e = act.get("enjoyment")
+        print(f"   - {name} ({t} hours, £{c}, enjoyment {e})")
+    print("Total Enjoyment:", total_enjoyment_BF)
+    print("Total Time Used:", total_time_BF, "hours")
+    print(f"Total cost: £{total_cost_BF}")
+    print()
+    print("Execution Time:", round(exec_time_BF, 7), "seconds")
 
 
 def main():
@@ -136,9 +156,9 @@ def main():
 
     input_file = "Input_Files/Sample Input Files-20260121/input_10.txt"
     n, T, B, activities = read_input(input_file)
-    brute_force_solver(activities, T)
-    # TODO: Implement main logic and run brute force and dp algorithms
-    print(f"Input file: {input_file}")
+    best_acts_BF, best_enjoyment_BF, best_time_BF, best_cost_BF, exec_time_BF = brute_force_solver(activities, T)
+    print_results(input_file, best_acts_BF, best_enjoyment_BF, best_time_BF,
+                  best_cost_BF, T, B, exec_time_BF)
 
 
 if __name__ == "__main__":
