@@ -112,7 +112,9 @@ def dp_solver(activities, max_constraint, constraint_type='time'):
 
 
 def print_results(input_file, selected_activities_BF, total_enjoyment_BF, 
-                 total_time_BF, total_cost_BF, max_time, max_budget, exec_time_BF):
+                 total_time_BF, total_cost_BF, max_time, max_budget, exec_time_BF,
+                 selected_activites_DP, total_enjoyment_DP, total_time_DP,
+                 total_cost_DP, exec_time_DP):
     """
     Print results in the required format.
     
@@ -142,12 +144,29 @@ def print_results(input_file, selected_activities_BF, total_enjoyment_BF,
         c = act.get("cost")
         e = act.get("enjoyment")
         print(f"   - {name} ({t} hours, £{c}, enjoyment {e})")
+    print()
     print("Total Enjoyment:", total_enjoyment_BF)
     print("Total Time Used:", total_time_BF, "hours")
     print(f"Total cost: £{total_cost_BF}")
     print()
     print("Execution Time:", round(exec_time_BF, 7), "seconds")
-
+    print()
+    print("--- DYNAMIC PROGRAMMING ALGORITHM ---")
+    print("Selected Activities:")
+    for act in selected_activities_DP:
+        name = act.get("name")
+        t = act.get("time")
+        c = act.get("cost")
+        e = act.get("enjoyment")
+        print(f"   - {name} ({t} hours, £{c}, enjoyment {e})")
+    print()
+    print("Total Enjoyment:", total_enjoyment_DP)
+    print("Total Time Used:", total_time_DP, "hours")
+    print(f"Total cost: £{total_cost_DP}")
+    print()
+    print("Execution Time:", round(exec_time_DP, 7), "seconds")
+    print()
+    print("========================================")
 
 def main():
     """
@@ -157,8 +176,10 @@ def main():
     input_file = "Input_Files/Sample Input Files-20260121/input_10.txt"
     n, T, B, activities = read_input(input_file)
     best_acts_BF, best_enjoyment_BF, best_time_BF, best_cost_BF, exec_time_BF = brute_force_solver(activities, T)
+    best_acts_DP, best_enjoyment_DP, best_time_DP, best_cost_DP, exec_time_DP = dp_solver()
     print_results(input_file, best_acts_BF, best_enjoyment_BF, best_time_BF,
-                  best_cost_BF, T, B, exec_time_BF)
+                  best_cost_BF, T, B, exec_time_BF, best_acts_DP, best_enjoyment_DP,
+                  best_time_DP, best_cost_DP, exec_time_DP)
 
 
 if __name__ == "__main__":
