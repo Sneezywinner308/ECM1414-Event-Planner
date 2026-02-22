@@ -12,6 +12,7 @@ Usage:
 
 import time
 from itertools import combinations
+import sys
 #T = 0
 
 
@@ -113,7 +114,7 @@ def dp_solver(activities, max_constraint, constraint_type='time'):
 
 def print_results(input_file, selected_activities_BF, total_enjoyment_BF, 
                  total_time_BF, total_cost_BF, max_time, max_budget, exec_time_BF,
-                 selected_activites_DP, total_enjoyment_DP, total_time_DP,
+                 selected_activities_DP, total_enjoyment_DP, total_time_DP,
                  total_cost_DP, exec_time_DP):
     """
     Print results in the required format.
@@ -173,7 +174,7 @@ def main():
     Main function to run the event planner.
     """
 
-    input_file = "Input_Files/Sample Input Files-20260121/input_10.txt"
+    input_file = sys.argv[1]
     n, T, B, activities = read_input(input_file)
     best_acts_BF, best_enjoyment_BF, best_time_BF, best_cost_BF, exec_time_BF = brute_force_solver(activities, T)
     best_acts_DP, best_enjoyment_DP, best_time_DP, best_cost_DP, exec_time_DP = dp_solver()
