@@ -79,11 +79,68 @@ def dp_solver(activities, max_constraint, constraint_type='time'):
     Args:
         activities: List of activity dictionaries
         max_constraint: Maximum time or budget available
-        constraint_type: 'time' or 'budget'
+        constraint_type: 'time' or 'cost'
     
     Returns:
         tuple: (selected_activities, total_enjoyment, execution_time)
     """
+    def total_enjoyment(max_constraint, weights, enjoyment):
+
+        n= len(weights)
+        dp = [[0]*(max_constraint + 1) for _ in range(n + 1)]  # creates the dynamic programming table 
+
+        for i in range (1, n+1): 
+            for c in range (0, max_constraint+1):
+                w = weights[i-1] # time or cost using the first i activities with capacity c 
+                val = enjoyment[i-1]
+
+                if w > c: # ignores activities that dont fit into the time constraint 
+                    dp[i][c] = dp[i-1][c]
+
+                else:
+                    dp[i][c] = max(dp[i-1][c],
+                                   val + dp[i-1][c-w]
+                                   )
+        return dp [n][max_constraint], dp # returns the answer
+    
+    def selected_activities(max_constraint, weights, enjoyment, dp): #used to find the activities selected 
+        n = len(weights)
+        chosen = []
+        i, c = n, max_constraint
+
+        while i >  0 and c >= 0 : 
+            if dp[i][c] == dp[i-1][c]:
+                i -= 1
+            else:
+                chosen.append(i-1)
+                c -= weights[i-1]
+                i -= 1
+
+        chosen.reverse()
+        return chosen 
+    
+    def dp_solver(activities, max_constraint, constraint_type= 'time'):
+        import time
+
+        if constraint_type == 'time' : 
+            weights = [a ["time"] for a in activities]
+        elif constraint_type == 'cost' : 
+            weights = [a["cost"] for a in activities]
+        else: 
+            raise ValueError("Unknown constraint")
+        
+        enjoyment = [a["enjoyment"] for a in activities]
+
+        start = time.time()
+        best, dp = total_enjoyment(max_constraint, weights, enjoyment)
+        chosen_indices = selected_activities(max_constraint, weights, enjoyment, dp)
+        execution_time = time.time() - start 
+
+        return best, chosen_indices, execution_time
+    
+
+
+    return dp_solver(activities, max_constraint, constraint_type)
     # TODO: Implement dynamic programming algorithm
     pass
 
