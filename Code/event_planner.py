@@ -1,43 +1,23 @@
-#!/usr/bin/env python3
 """
 Student Society Event Planner
-ECM1414 - Algorithms and Data Structures Coursework
-
-This program helps plan a student society event by selecting activities
-that maximize enjoyment while staying within time and budget constraints.
-
-Usage:
-    python event_planner.py <input_file>
 """
-
 import time
 from itertools import combinations
 import sys
-#T = 0
-
-
 def read_input(filename):
     """
     Read input file and parse activity data.
-    
-    Args:
-        filename: Path to input file
-    
-    Returns:
-        tuple: (num_activities, max_time, max_budget, activities)
-               activities is a list of dicts with keys: name, time, cost, enjoyment
     """
     activities = []
     #open the file and assign test to variable lines
     with open(filename, "r") as f:
         lines = [ln for ln in f]
 
-    #assign n, T and B
-
+    #assign n, t and b
     n = int(lines[0])
     line2 = lines[1].split()
-    T = int(line2[0])
-    B = int(line2[1])
+    t = int(line2[0])
+    b = int(line2[1])
 
     #iterate through each activity and assign parts to dictionary
     for i in range(n):
@@ -48,47 +28,37 @@ def read_input(filename):
             "cost" : int(cost),
             "enjoyment" : int(enjoyment),
         })
-    #tests to see if code runs correctly:
-#    print(n, T, B)
-#   print(activities[0]["names"])
-    return n, T, B, activities
+    f.close()
+    return t, b, activities
 
 
 
-def brute_force_solver(acts, T):
+def brute_force_solver(acts, t):
     """
-    Brute force algorithm to find optimal activity selection.
-    Generates all possible subsets and evaluates each.
-    
-    Args:
-        activities: List of activity dictionaries
-        max_constraint: Maximum time or budget available
-        constraint_type: 'time' or 'budget'
-    
-    Returns:
-        tuple: (selected_activities, total_enjoyment, execution_time)
+    brute force algorithm which generates every possible subset.
     """
     start = time.perf_counter()
-
+    #initialise variables
     best_enjoyment = -1
     best_acts = []
     best_time = 999
     best_cost = 0
+    #iterate through each length of activities (1 to n)
     for i in range(len(acts)+1):
+        #iterate through each combination of activities for that length
         for combs in combinations(acts, i):
+            #check combination satisfies time constraint
             sum_time = sum(j["time"] for j in combs)
-            if sum_time > int(T):
+            if sum_time > int(t):
                 continue
             sum_enjoyment = sum(k["enjoyment"] for k in combs)
+            #find if enjoyment is better and make it current best if so
             if (sum_enjoyment > best_enjoyment or
                 (sum_enjoyment == best_enjoyment and sum_time < best_time)):
                 best_enjoyment = sum_enjoyment
                 best_time = sum_time
                 best_acts = list(combs)
                 best_cost = sum(j["cost"] for j in combs)
-    #print(best_enjoyment)
-    #print(best_acts)
-
     end = time.perf_counter()
     exec_time = end - start
     return best_acts, best_enjoyment, best_time, best_cost, exec_time
@@ -97,28 +67,18 @@ def brute_force_solver(acts, T):
 
 def dp_solver(activities, max_constraint, constraint_type='time'):
     """
-    Dynamic programming algorithm to find optimal activity selection.
-    Uses memoization to avoid redundant calculations.
-    
-    Args:
-        activities: List of activity dictionaries
-        max_constraint: Maximum time or budget available
-        constraint_type: 'time' or 'cost'
-    
-    Returns:
-        tuple: (selected_activities, total_enjoyment, execution_time)
+    Dynamic programming algorithm
     """
     def total_enjoyment(max_constraint, weights, enjoyment):
-
         n= len(weights)
-        dp = [[0]*(max_constraint + 1) for _ in range(n + 1)]  # creates the dynamic programming table 
+        dp = [[0]*(max_constraint + 1) for _ in range(n + 1)]#creates the dynamic programming table
 
-        for i in range (1, n+1): 
+        for i in range (1, n+1):
             for c in range (0, max_constraint+1):
-                w = weights[i-1] # time or cost using the first i activities with capacity c 
+                w = weights[i-1] # time or cost using the first i activities with capacity c
                 val = enjoyment[i-1]
 
-                if w > c: # ignores activities that dont fit into the time constraint 
+                if w > c: # ignores activities that dont fit into the time constraint
                     dp[i][c] = dp[i-1][c]
 
                 else:
@@ -126,13 +86,15 @@ def dp_solver(activities, max_constraint, constraint_type='time'):
                                    val + dp[i-1][c-w]
                                    )
         return dp [n][max_constraint], dp # returns the answer
-    
-    def selected_activities(max_constraint, weights, enjoyment, dp): #used to find the activities selected 
+    def selected_activities(max_constraint, weights, dp):
+        """
+        used to find the activities selected
+        """
         n = len(weights)
         chosen = []
         i, c = n, max_constraint
 
-        while i >  0 and c >= 0 : 
+        while i >  0 and c >= 0 :
             if dp[i][c] == dp[i-1][c]:
                 i -= 1
             else:
@@ -141,50 +103,40 @@ def dp_solver(activities, max_constraint, constraint_type='time'):
                 i -= 1
 
         chosen.reverse()
-        return chosen 
-    
-    def dp_solver(activities, max_constraint, constraint_type= 'time'):
-        import time
-
-        if constraint_type == 'time' : 
+        return chosen
+    def run_dp(activities, max_constraint, constraint_type= 'time'):
+        """
+        runs dynamic programming algorithm
+        """
+        if constraint_type == 'time':
             weights = [a ["time"] for a in activities]
-        elif constraint_type == 'cost' : 
+        elif constraint_type == 'cost':
             weights = [a["cost"] for a in activities]
-        else: 
+        else:
             raise ValueError("Unknown constraint")
-        
         enjoyment = [a["enjoyment"] for a in activities]
 
-        start = time.time()
+        start = time.perf_counter()
         best, dp = total_enjoyment(max_constraint, weights, enjoyment)
-        chosen_indices = selected_activities(max_constraint, weights, enjoyment, dp)
-        execution_time = time.time() - start 
+        chosen_indices = selected_activities(max_constraint, weights, dp)
+        chosen_acts = [activities[i] for i in chosen_indices]
+        total_time = sum(j["time"] for j in chosen_acts)
+        total_cost = sum(j["cost"] for j in chosen_acts)
+        execution_time = time.perf_counter() - start
 
-        return best, chosen_indices, execution_time
-    
-
-
-    return dp_solver(activities, max_constraint, constraint_type)
-    # TODO: Implement dynamic programming algorithm
-    pass
+        return chosen_acts, best, total_time, total_cost, execution_time
 
 
-def print_results(input_file, selected_activities_BF, total_enjoyment_BF, 
-                 total_time_BF, total_cost_BF, max_time, max_budget, exec_time_BF,
-                 selected_activities_DP, total_enjoyment_DP, total_time_DP,
-                 total_cost_DP, exec_time_DP):
+    return run_dp(activities, max_constraint, constraint_type)
+
+
+
+def print_results(input_file, selected_activities_bf, total_enjoyment_bf,
+                 total_time_bf, total_cost_bf, max_time, max_budget, exec_time_bf,
+                 selected_activities_dp, total_enjoyment_dp, total_time_dp,
+                 total_cost_dp, exec_time_dp):
     """
     Print results in the required format.
-    
-    Args:
-        algorithm_name: Name of the algorithm used
-        selected_activities: List of selected activity dicts
-        total_enjoyment: Sum of enjoyment values
-        total_time: Sum of time used
-        total_cost: Sum of cost
-        max_time: Available time
-        max_budget: Available budget
-        exec_time: Execution time in seconds
     """
     print("========================================")
     print("EVENT PLANNER - RESULTS")
@@ -196,33 +148,33 @@ def print_results(input_file, selected_activities_BF, total_enjoyment_BF,
     print()
     print("--- BRUTE FORCE ALGORITHM ---")
     print("Selected Activities:")
-    for act in selected_activities_BF:
+    for act in selected_activities_bf:
         name = act.get("name")
         t = act.get("time")
         c = act.get("cost")
         e = act.get("enjoyment")
         print(f"   - {name} ({t} hours, £{c}, enjoyment {e})")
     print()
-    print("Total Enjoyment:", total_enjoyment_BF)
-    print("Total Time Used:", total_time_BF, "hours")
-    print(f"Total cost: £{total_cost_BF}")
+    print("Total Enjoyment:", total_enjoyment_bf)
+    print("Total Time Used:", total_time_bf, "hours")
+    print(f"Total cost: £{total_cost_bf}")
     print()
-    print("Execution Time:", round(exec_time_BF, 7), "seconds")
+    print("Execution Time:", round(exec_time_bf, 7), "seconds")
     print()
     print("--- DYNAMIC PROGRAMMING ALGORITHM ---")
     print("Selected Activities:")
-    for act in selected_activities_DP:
+    for act in selected_activities_dp:
         name = act.get("name")
         t = act.get("time")
         c = act.get("cost")
         e = act.get("enjoyment")
         print(f"   - {name} ({t} hours, £{c}, enjoyment {e})")
     print()
-    print("Total Enjoyment:", total_enjoyment_DP)
-    print("Total Time Used:", total_time_DP, "hours")
-    print(f"Total cost: £{total_cost_DP}")
+    print("Total Enjoyment:", total_enjoyment_dp)
+    print("Total Time Used:", total_time_dp, "hours")
+    print(f"Total cost: £{total_cost_dp}")
     print()
-    print("Execution Time:", round(exec_time_DP, 7), "seconds")
+    print("Execution Time:", round(exec_time_dp, 7), "seconds")
     print()
     print("========================================")
 
@@ -230,15 +182,15 @@ def main():
     """
     Main function to run the event planner.
     """
-
+    #take argument from terminal input
     input_file = sys.argv[1]
-    n, T, B, activities = read_input(input_file)
-    best_acts_BF, best_enjoyment_BF, best_time_BF, best_cost_BF, exec_time_BF = brute_force_solver(activities, T)
-    best_acts_DP, best_enjoyment_DP, best_time_DP, best_cost_DP, exec_time_DP = dp_solver()
-    print_results(input_file, best_acts_BF, best_enjoyment_BF, best_time_BF,
-                  best_cost_BF, T, B, exec_time_BF, best_acts_DP, best_enjoyment_DP,
-                  best_time_DP, best_cost_DP, exec_time_DP)
-
+    #call read_input, brute_force_solver() and dp_solver()
+    t, b, activities = read_input(input_file)
+    best_acts_bf, best_enjoyment_bf, best_time_bf, best_cost_bf, exec_time_bf = brute_force_solver(activities, t)
+    best_acts_dp, best_enjoyment_dp, best_time_dp, best_cost_dp, exec_time_dp = dp_solver(activities, t)
+    print_results(input_file, best_acts_bf, best_enjoyment_bf, best_time_bf,
+                  best_cost_bf, t, b, exec_time_bf, best_acts_dp, best_enjoyment_dp,
+                  best_time_dp, best_cost_dp, exec_time_dp)
 
 if __name__ == "__main__":
     main()
