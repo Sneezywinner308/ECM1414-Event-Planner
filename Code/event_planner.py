@@ -75,12 +75,11 @@ def dp_solver(activities, t):
 
         for i in range (1, n+1):
             for c in range (0, t+1):
-                w = weights[i-1] # time or cost using the first i activities with capacity c
+                w = weights[i-1]
                 val = enjoyment[i-1]
 
                 if w > c: # ignores activities that dont fit into the time constraint
                     dp[i][c] = dp[i-1][c]
-
                 else:
                     dp[i][c] = max(dp[i-1][c],
                                    val + dp[i-1][c-w]
@@ -137,9 +136,9 @@ def print_results(input_file, selected_activities_bf, total_enjoyment_bf,
     print("EVENT PLANNER - RESULTS")
     print("========================================")
     print()
-    print("Input File: ", input_file)
-    print("Available Time: ", max_time)
-    print("Available Budget: ", max_budget)
+    print("Input File:", input_file)
+    print("Available Time:", max_time)
+    print("Available Budget:", max_budget)
     print()
     print("--- BRUTE FORCE ALGORITHM ---")
     print("Selected Activities:")
